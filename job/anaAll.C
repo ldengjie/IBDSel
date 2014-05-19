@@ -22,6 +22,7 @@
 #include <TROOT.h>
 #include <vector>
 using namespace RooFit;
+using namespace std;
 
 int anaHists(int siteNum,string dataVer)
 {
@@ -1180,12 +1181,13 @@ int anaHists(int siteNum,string dataVer)
         for( int i=0 ; i<8 ; i++ )
         {
             //std::cout<<t_result[outLineNum][i]<<" " ;
-            outfile<< setw(13) <<t_result[outLineNum][i];
+            outfile<<std::setw(13) <<t_result[outLineNum][i];
             //outfile<< setw(13) <<outStr[outLineNum][i];
             if( i==7 )
             {
                 outfile<<endl;
             }
+
         }
         //std::cout<<endl;
         outLineNum++;

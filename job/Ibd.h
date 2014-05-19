@@ -13,6 +13,7 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include  <TCanvas.h>
 #include <TSelector.h>
 #include <iostream> 
 #include <math.h>
@@ -20,6 +21,8 @@
 using namespace std;
 class Ibd : public TSelector {
     public :
+        double fitHighEdge;
+        int    reBinNum;
         double livetime[3][4];
         double livetime0[3][4];
         double t_result[49][8];
@@ -34,6 +37,7 @@ class Ibd : public TSelector {
         //static const  int nBins=200;
         TTree          *fChain;   //!pointer to the lyzed TTree or TChain
         TFile* file;
+        string siteStr;
         double UpperNum[4];
         double LowerNum[4];
         // Declaration of leaf types
@@ -68,6 +72,7 @@ class Ibd : public TSelector {
         TH1F *FnProEWithoutrpc[4];
         TH1F *tFnProEWithrpc;
         TH1F *tFnProEWithoutrpc;
+        TH1F *tFnProEWithoutrpcUniX;
         TH2F *pxy[4];
         TH2F *prz[4];
         TH1F *pE[4];

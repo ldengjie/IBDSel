@@ -57,7 +57,7 @@
         outfile4out<<"      \\toprule "<<endl;
         outfile4out<<"      \\textcolor{red}{"<< dataVer<<"} & AD1 & AD2 & AD3 & AD8 & AD4 & AD5 & AD6 & AD7  \\\\ "<<endl;
         outfile4out<<"      \\hline "<<endl;
-        outfile4out<<"      total number & "<<endl;
+        outfile4out<<"      total number(all ADs) & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<setprecision(2)<<setiosflags(ios::fixed)<<outStr[13][0] <<"$\\pm$"<<outStr[14][0] <<"} & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<outStr[13][2] <<"$\\pm$"<<outStr[14][2] <<"} & "<<endl;
         outfile4out<<"       \\multicolumn{4}{c}{"<<outStr[13][4]<<"$\\pm$"<<outStr[14][4] <<" } \\\\ "<<endl;
@@ -67,7 +67,7 @@
         outfile4out<<"       \\multicolumn{2}{c|}{ "<<outStr[15][2] <<"}& "<<endl;
         outfile4out<<"       \\multicolumn{4}{c}{"<<outStr[15][4] <<"} \\\\ "<<endl;
         outfile4out<<"      \\hline "<<endl;
-        outfile4out<<"      Rate(/day) & "<<endl;
+        outfile4out<<"      Rate(/day/AD) & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<setprecision(2)<<setiosflags(ios::fixed)<<outStr[17][0] <<"$\\pm$"<<outStr[18][0] <<"} & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<outStr[17][2] <<"$\\pm$"<<outStr[18][2] <<"}& "<<endl;
         outfile4out<<"       \\multicolumn{4}{c}{"<<outStr[17][4] <<"$\\pm$"<<outStr[18][4]<<"} \\\\ "<<endl;
@@ -81,12 +81,12 @@
         outfile4out<<"      \\toprule "<<endl;
         outfile4out<<"      \\textcolor{red}{"<< dataVer<<"} & AD1 & AD2 & AD3 & AD8 & AD4 & AD5 & AD6 & AD7  \\\\ "<<endl;
         outfile4out<<"      \\hline "<<endl;
-        outfile4out<<"      total number & "<<endl;
+        outfile4out<<"      total number(all ADs) & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<setprecision(2)<<setiosflags(ios::fixed)<<outStr[19][0] <<"$\\pm$"<<outStr[20][0] <<"} & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<outStr[19][2] <<"$\\pm$"<<outStr[20][2] <<"} & "<<endl;
         outfile4out<<"       \\multicolumn{4}{c}{"<<outStr[19][4]<<"$\\pm$"<<outStr[20][4] <<" } \\\\ "<<endl;
         outfile4out<<"      \\hline "<<endl;
-        outfile4out<<"      Rate(/day) & "<<endl;
+        outfile4out<<"      Rate(/day/AD) & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<setprecision(2)<<setiosflags(ios::fixed)<<outStr[21][0] <<"$\\pm$"<<outStr[22][0] <<"} & "<<endl;
         outfile4out<<"       \\multicolumn{2}{c|}{"<<outStr[21][2] <<"$\\pm$"<<outStr[22][2] <<"}& "<<endl;
         outfile4out<<"       \\multicolumn{4}{c}{"<<outStr[21][4] <<"$\\pm$"<<outStr[22][4]<<"} \\\\ "<<endl;
