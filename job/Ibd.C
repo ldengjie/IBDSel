@@ -432,8 +432,6 @@ void Ibd::Terminate()
 
     //fn
 
-    fitHighEdge=50.;
-    reBinNum=3;
     for( int i=1 ; i<=200 ; i++ )
     {
         double nEvt = tFnProEWithrpc->GetBinContent(i);
@@ -444,27 +442,62 @@ void Ibd::Terminate()
         tFnProEWithoutrpcUniX->SetBinError(i, sqrt(nEvt0UniX));
     }
 
-    TFile* f=new TFile("fnSpec.root","read");
-    if( f->IsZombie() )
+    fitHighEdge=50.;
+    reBinNum=3;
+    scaledHighEdge=99.;//here,99.6 should be less than tFnProEWithoutrpcUniX's maxmium 99.7,because >99.7 there are many events .
+
+    TFile* f_ows=new TFile("AnaFNEH1_ows.root","read");
+    if( f_ows->IsZombie() )
     {
-        std::cout<<"Can't find fnSpec.root ... "<<endl;
+        std::cout<<"Can't find AnaFNEH1_ows.root ... "<<endl;
     }
-    TH1F* h=(TH1F*)f->Get("h1");
-    if( !h )
+    TH1F* h_ows=(TH1F*)f_ows->Get("h1");
+    if( !h_ows )
     {
-        std::cout<<"Can't find h1 in fnSpec.root ... "<<endl;
+        std::cout<<"Can't find h1 in AnaFNEH1_ows.root ... "<<endl;
     }
-    TH1F h1=*h;
-    double tnum=tFnProEWithoutrpcUniX->Integral(tFnProEWithoutrpcUniX->FindBin(12.),tFnProEWithoutrpcUniX->FindBin(99.6));//here,99.6 should be less than tFnProEWithoutrpcUniX's maxmium 99.7,because >99.7 there are many events .
-    double hnum=h->Integral(h->FindBin(12.),h->FindBin(99.6));
+    TH1F h1_ows=*h_ows;
+    double tnum=tFnProEWithoutrpcUniX->Integral(tFnProEWithoutrpcUniX->FindBin(12.),tFnProEWithoutrpcUniX->FindBin(scaledHighEdge));
+    double hnum_ows=h_ows->Integral(h_ows->FindBin(12.),h_ows->FindBin(scaledHighEdge));
     std::cout<<"tnum  : "<<tnum<<endl;
-    std::cout<<"hnum  : "<<hnum<<endl;
-    h1.Scale(tnum/hnum);
+    std::cout<<"hnum_ows  : "<<hnum_ows<<endl;
+    h1_ows.Scale(tnum/hnum_ows);
+
+    TFile* f_rpc=new TFile("AnaFNEH1_rpc.root","read");
+    if( f_rpc->IsZombie() )
+    {
+        std::cout<<"Can't find AnaFNEH1_rpc.root ... "<<endl;
+    }
+    TH1F* h_rpc=(TH1F*)f_rpc->Get("h1");
+    if( !h_rpc )
+    {
+        std::cout<<"Can't find h1 in AnaFNEH1_rpc.root ... "<<endl;
+    }
+    TH1F h1_rpc=*h_rpc;
+    double hnum_rpc=h_rpc->Integral(h_rpc->FindBin(12.),h_rpc->FindBin(scaledHighEdge));
+    std::cout<<"hnum_rpc  : "<<hnum_rpc<<endl;
+    h1_rpc.Scale(tnum/hnum_rpc);
+
+    TFile* f_mc=new TFile("AnafilefastMCEH1_noIWS.root","read");
+    if( f_mc->IsZombie() )
+    {
+        std::cout<<"Can't find AnafilefastMCEH1_noIWS.root ... "<<endl;
+    }
+    TH1F* h_mc=(TH1F*)f_mc->Get("ad1H");
+    if( !h_mc )
+    {
+        std::cout<<"Can't find h1 in AnafilefastMCEH1_noIWS.root ... "<<endl;
+    }
+    TH1F h1_mc=*h_mc;
+    double hnum_mc=h_mc->Integral(h_mc->FindBin(12.),h_mc->FindBin(scaledHighEdge));
+    std::cout<<"hnum_mc  : "<<hnum_mc<<endl;
+    h1_mc.Scale(tnum/hnum_mc);
+
     TH1F* h1Q=new TH1F("h1Q","h1Q",174,12.7,99.7);
     TH1F* tFnProEWithoutrpcUniXQ=new TH1F("tFnProEWithoutrpcUniXQ","tFnProEWithoutrpcUniXQ",174,12.7,99.7);
     for( int i=1 ; i<=174 ; i++ )
     {
-        h1Q->SetBinContent(i,h1.GetBinContent(i+24));
+        h1Q->SetBinContent(i,h1_ows.GetBinContent(i+24));
         tFnProEWithoutrpcUniXQ->SetBinContent(i,tFnProEWithoutrpcUniX->GetBinContent(i+24));
     }
     double res[174], x[174];
@@ -556,9 +589,9 @@ void Ibd::Terminate()
     std::cout<<"NFn0  : "<<NFn0<<endl;
     std::cout<<"NFn1  : "<<NFn1<<endl;
     //double tNum1=tFnProEWithrpcUniX->Integral(tFnProEWithrpcUniX->FindBin(12.),tFnProEWithrpcUniX->FindBin(60));
-    //double hNum1=h->Integral(h->FindBin(12.),h->FindBin(60));
-    //double fnNum1=h->Integral(h->FindBin(0.7),h->FindBin(12.));
-    //fnNum1=fnNum1*tNum1/hNum1;
+    //double hNum1_ows=h_ows->Integral(h_ows->FindBin(12.),h_ows->FindBin(60));
+    //double fnNum1=h_ows->Integral(h_ows->FindBin(0.7),h_ows->FindBin(12.));
+    //fnNum1=fnNum1*tNum1/hNum1_ows;
     //std::cout<<"NFn10-fnNum  : "<<NFn10-fnNum <<endl;
     //std::cout<<"NFn00-fnNum  : "<<NFn00-fnNum<<endl;
     //double fnNum1Err=sqrt(fnNum1+max(abs(NFn1-fnNum1),abs(NFn0-fnNum1))*max(abs(NFn1-fnNum1),abs(NFn0-fnNum1)));
@@ -570,11 +603,22 @@ void Ibd::Terminate()
     //without using rpc veto
     cout<<" "<<endl;
     cout<<" "<<endl;
-    double tNum=tFnProEWithoutrpcUniX->Integral(tFnProEWithoutrpcUniX->FindBin(12.),tFnProEWithoutrpcUniX->FindBin(99.6));
-    double hNum=h->Integral(h->FindBin(12.),h->FindBin(99.6));
-    double fnNum=h->Integral(h->FindBin(0.7),h->FindBin(12.));
-    fnNum=fnNum*tNum/hNum;
+    double tNum=tFnProEWithoutrpcUniX->Integral(tFnProEWithoutrpcUniX->FindBin(12.),tFnProEWithoutrpcUniX->FindBin(scaledHighEdge));
+    double hNum_ows=h_ows->Integral(h_ows->FindBin(12.),h_ows->FindBin(scaledHighEdge));
+    double fnNum_ows=h_ows->Integral(h_ows->FindBin(0.7),h_ows->FindBin(12.));
+    fnNum_ows=fnNum_ows*tNum/hNum_ows;
 
+    double hNum_rpc=h_rpc->Integral(h_rpc->FindBin(12.),h_rpc->FindBin(scaledHighEdge));
+    double fnNum_rpc=h_rpc->Integral(h_rpc->FindBin(0.7),h_rpc->FindBin(12.));
+    fnNum_rpc=fnNum_rpc*tNum/hNum_rpc;
+    
+    double hNum_mc=h_mc->Integral(h_mc->FindBin(12.),h_mc->FindBin(scaledHighEdge));
+    double fnNum_mc=h_mc->Integral(h_mc->FindBin(0.7),h_mc->FindBin(12.));
+    fnNum_mc=fnNum_mc*tNum/hNum_mc;
+
+    h1_ows.Rebin(reBinNum);
+    h1_rpc.Rebin(reBinNum);
+    h1_mc.Rebin(reBinNum);
     tFnProEWithoutrpcUniX->Rebin(reBinNum);
     cout<<">>> uniform bin ... 12("<<tFnProEWithoutrpcUniX->FindBin(12.) <<") ~ "<<fitHighEdge <<"("<<tFnProEWithoutrpcUniX->FindBin(fitHighEdge) <<")"<<endl;
     int binlowUniX=tFnProEWithoutrpcUniX->FindBin(0.7);
@@ -619,12 +663,33 @@ void Ibd::Terminate()
     //iNFnsquare10=(ipar10[0]*2+12.7*ipar10[1])*(12-0.7)/2;
     //
     //NFn00=f00->Integral(0.7,12.0);
-    //double tNum=tFnProEWithoutrpcUniX->Integral(tFnProEWithoutrpcUniX->FindBin(12.),tFnProEWithoutrpcUniX->FindBin(99.6));
-    //double hNum=h->Integral(h->FindBin(12.),h->FindBin(99.6));
-    double fnNumErr=sqrt(fnNum+max(abs(NFn10-fnNum),abs(NFn00-fnNum))*max(abs(NFn10-fnNum),abs(NFn00-fnNum)));
-    std::cout<<"NFn00  : "<<NFn00<<" NFn00-fnNum  : "<<NFn00-fnNum<<" (NFn00-fnNum)/fnNum : "<<(NFn00-fnNum)/fnNum<<endl;
-    std::cout<<"NFn10  : "<<NFn10<<" NFn10-fnNum  : "<<NFn10-fnNum<<" (NFn10-fnNum)/fnNum : "<<(NFn10-fnNum)/fnNum<<endl;
-    std::cout<<"fnNum  : "<<fnNum<<" stat.err/fnNum : "<<sqrt(fnNum)/fnNum<<" sys.err/fnNum : "<<max(abs(NFn10-fnNum),abs(NFn00-fnNum))/fnNum<<" total.err/fnNum : "<<fnNumErr/fnNum<<endl;
+    //double tNum=tFnProEWithoutrpcUniX->Integral(tFnProEWithoutrpcUniX->FindBin(12.),tFnProEWithoutrpcUniX->FindBin(scaledHighEdge));
+    //double hNum_ows=h_ows->Integral(h_ows->FindBin(12.),h_ows->FindBin(scaledHighEdge));
+    //double fnNumErr_ows=sqrt(fnNum_ows+max(abs(NFn10-fnNum_ows),abs(NFn00-fnNum_ows))*max(abs(NFn10-fnNum_ows),abs(NFn00-fnNum_ows)));
+    //std::cout<<"NFn00  : "<<NFn00<<" NFn00-fnNum_ows  : "<<NFn00-fnNum_ows<<" (NFn00-fnNum_ows)/fnNum_ows : "<<(NFn00-fnNum_ows)/fnNum_ows<<endl;
+    //std::cout<<"NFn10  : "<<NFn10<<" NFn10-fnNum_ows  : "<<NFn10-fnNum_ows<<" (NFn10-fnNum_ows)/fnNum_ows : "<<(NFn10-fnNum_ows)/fnNum_ows<<endl;
+    //std::cout<<"fnNum_ows  : "<<fnNum_ows<<" stat.err/fnNum_ows : "<<sqrt(fnNum_ows)/fnNum_ows<<" sys.err/fnNum_ows : "<<max(abs(NFn10-fnNum_ows),abs(NFn00-fnNum_ows))/fnNum_ows<<" total.err/fnNum_ows : "<<fnNumErr_ows/fnNum_ows<<endl;
+
+    double fnNum=(fnNum_ows+fnNum_rpc)/2;
+    multimap<double,string> fnNumMap;
+    fnNumMap.insert(make_pair((double)fnNum,"*fnNum"));
+    fnNumMap.insert(make_pair((double)fnNum_ows,"fnNum_ows"));
+    fnNumMap.insert(make_pair((double)fnNum_rpc,"fnNum_rpc"));
+    fnNumMap.insert(make_pair((double)NFn00,"NFn00"));
+    fnNumMap.insert(make_pair((double)NFn10,"NFn10"));
+    int mapSize=fnNumMap.size();
+    int mapi=1;
+    double fnNumErr=0.;
+    for(multimap<double,string>::iterator it=fnNumMap.begin(); it!=fnNumMap.end() ; it++ )
+    {
+        if( mapi==1||mapi==mapSize )
+        {
+            fnNumErr=fnNumErr<abs((it->first-fnNum)/fnNum)?abs((it->first-fnNum)/fnNum):fnNumErr;
+        }
+        nameStr=Form("  %10s  %5.2f  %3.1f%%",it->second.c_str(),it->first,(it->first-fnNum)/fnNum*100); 
+        cout<<nameStr<<endl;
+    }
+
     double totallivetime0=0.;
     for( int i=0 ; i<ADNum ; i++ )
     {
@@ -635,22 +700,29 @@ void Ibd::Terminate()
     {
         totallivetime+=livetime[site][i];
     }
+    cout<<"Rate syst.err  : "<<fnNum*fnNumErr/totallivetime0<<endl;
+    cout<<"Rate stat.err  : "<<sqrt(fnNum)/totallivetime0<<endl;
+    
+    fnNumErr=sqrt(fnNum+(fnNum*fnNumErr)*(fnNum*fnNumErr));
+    cout<<"total persent  : "<<Form(" %.2f%% ",fnNumErr/fnNum*100)<<endl;
 
     std::cout<<"	total0  : "<<fnNum<<" +- "<<fnNumErr\
         <<"   B/S : "<<fnNum/(tNumo+tNum1) \
         <<" rate : "<<fnNum/totallivetime0<<" +- "<< fnNumErr/totallivetime0<<" /day"<<endl;
     //tFnProEWithoutrpcUniX->SetLineColor();
     tFnProEWithoutrpcUniX->Draw("e");
-    h1.SetLineColor(kRed);
-    h1.Draw("same");
+    h1_ows.SetLineColor(kRed);
+    h1_ows.Draw("same");
+    h1_rpc.SetLineColor(kBlue);
+    h1_rpc.Draw("same");
     gPad->SetLogy();
     c2->SaveAs(Form("%s/%s%sfnSpec.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
     //c2->Write();
     tFnProEWithrpc->Write();
     tFnProEWithoutrpc->Write();
     tFnProEWithoutrpcUniX->Write();
-    //h->Write();
-    //delete h;
+    //h_ows->Write();
+    //delete h_ows;
     //delete c;
     //delete f;
     //file->Close();	

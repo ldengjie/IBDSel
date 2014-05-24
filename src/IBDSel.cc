@@ -529,7 +529,7 @@ bool IBDSel::execute()
 
 	int vetotag=muonVeto_l->veto(CurEvent);
 
-	if( vetotag==1 )
+	if( vetotag==1 )//1 for muon veto,except RPC,2 only for RPC veto,0 not be vetoed by muons
 	{
 		return true;
 	} else if(vetotag==2)

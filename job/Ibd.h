@@ -23,6 +23,7 @@ class Ibd : public TSelector {
     public :
         double fitHighEdge;
         int    reBinNum;
+        double scaledHighEdge;
         double livetime[3][4];
         double livetime0[3][4];
         double t_result[49][8];
@@ -66,6 +67,7 @@ class Ibd : public TSelector {
         int tNum2;
         int ADNum;
         TString histname; 
+        TString nameStr;
         TH1F *t2lastmuonWithrpc[4];
         TH1F *t2lastmuonWithoutrpc[4];
         TH1F *FnProEWithrpc[4];
