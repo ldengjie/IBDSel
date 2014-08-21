@@ -25,6 +25,7 @@ public :
    int ADNum;
    int site;
    TH1F* t2lastshowermuon[5][6];
+   TH1F* t2lastshowermuonNoRed[5][6];
 
    Int_t           isIbd;
    Int_t           isLi;
@@ -36,10 +37,10 @@ public :
    Int_t           fileNum[2];
    Long64_t        entry[2];
    Long64_t        trigNum[2];
-   float        timeInterval;
+    Float_t       timeInterval;
    Int_t           delayedTrigTimeSec;
-   float         promptT2Muon[22];
-   float         delayedT2Muon[22];
+   Float_t promptT2Muon[22];
+    Float_t        delayedT2Muon[22];
 
    // List of branches
    TBranch        *b_isIbd_l;   //!

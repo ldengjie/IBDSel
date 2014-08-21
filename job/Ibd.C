@@ -10,8 +10,11 @@
 #include  "TGraph.h"
 #include  "TGraphQQ.h"
 #include  "TPaveLabel.h"
-#include "iomanip.h"
+//#include "iomanip.h"
 #include  <TFitResult.h>
+#include  <TLegend.h>
+#include <iomanip>
+using namespace std;
 
 void Ibd::Begin(TTree * /*tree*/)
 {
@@ -172,7 +175,10 @@ void Ibd::Begin(TTree * /*tree*/)
     option+="Ibd_";
     option+=dataVer;
     option+=".root";
-    TString fileName=dataVer+"/"+option;
+    //TString fileName=dataVer+"/"+option;
+    TString fileName=dataVer;
+    fileName+="/";
+    fileName+=option;
     file = new TFile(fileName,"RECREATE");
 
     // Binning	
@@ -443,9 +449,14 @@ void Ibd::Terminate()
     }
 
     fitHighEdge=50.;
-    reBinNum=3;
     scaledHighEdge=99.;//here,99.6 should be less than tFnProEWithoutrpcUniX's maxmium 99.7,because >99.7 there are many events .
-
+    if( site==2 )
+    {
+        reBinNum=3;
+    } else
+    {
+        reBinNum=2;
+    }
     TFile* f_ows=new TFile("AnaFNEH1_ows.root","read");
     if( f_ows->IsZombie() )
     {
@@ -477,6 +488,21 @@ void Ibd::Terminate()
     double hnum_rpc=h_rpc->Integral(h_rpc->FindBin(12.),h_rpc->FindBin(scaledHighEdge));
     std::cout<<"hnum_rpc  : "<<hnum_rpc<<endl;
     h1_rpc.Scale(tnum/hnum_rpc);
+
+    TFile* f_iws_MC=new TFile("AnaFNEH1_iws_MC.root","read");
+    if( f_iws_MC->IsZombie() )
+    {
+        std::cout<<"Can't find AnaFNEH1_iws_MC.root ... "<<endl;
+    }
+    TH1F* h_iws_MC=(TH1F*)f_iws_MC->Get("h1");
+    if( !h_iws_MC )
+    {
+        std::cout<<"Can't find h1 in AnaFNEH1_iws_MC.root ... "<<endl;
+    }
+    TH1F h1_iws_MC=*h_iws_MC;
+    double hnum_iws_MC=h_iws_MC->Integral(h_iws_MC->FindBin(12.),h_iws_MC->FindBin(scaledHighEdge));
+    std::cout<<"hnum_iws_MC  : "<<hnum_iws_MC<<endl;
+    h1_iws_MC.Scale(tnum/hnum_iws_MC);
 
     TFile* f_mc=new TFile("AnafilefastMCEH1_noIWS.root","read");
     if( f_mc->IsZombie() )
@@ -538,7 +564,7 @@ void Ibd::Terminate()
     c1->SaveAs(Form("%s/%s%sfnSpecNorRes.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
 
     file->cd();
-    TCanvas* c2=new TCanvas(Form("%sfnSpec",dataVer.c_str()),"c2",800,600);
+    TCanvas* c2=new TCanvas(Form("%sfnSpec",dataVer.c_str()),"c2",600,400);
     //use rpc veto
     //pol0
     cout<<" "<<endl;
@@ -611,6 +637,10 @@ void Ibd::Terminate()
     double hNum_rpc=h_rpc->Integral(h_rpc->FindBin(12.),h_rpc->FindBin(scaledHighEdge));
     double fnNum_rpc=h_rpc->Integral(h_rpc->FindBin(0.7),h_rpc->FindBin(12.));
     fnNum_rpc=fnNum_rpc*tNum/hNum_rpc;
+
+    double hNum_iws_MC=h_iws_MC->Integral(h_iws_MC->FindBin(12.),h_iws_MC->FindBin(scaledHighEdge));
+    double fnNum_iws_MC=h_iws_MC->Integral(h_iws_MC->FindBin(0.7),h_iws_MC->FindBin(12.));
+    fnNum_iws_MC=fnNum_iws_MC*tNum/hNum_iws_MC;
     
     double hNum_mc=h_mc->Integral(h_mc->FindBin(12.),h_mc->FindBin(scaledHighEdge));
     double fnNum_mc=h_mc->Integral(h_mc->FindBin(0.7),h_mc->FindBin(12.));
@@ -618,6 +648,7 @@ void Ibd::Terminate()
 
     h1_ows.Rebin(reBinNum);
     h1_rpc.Rebin(reBinNum);
+    h1_iws_MC.Rebin(reBinNum);
     h1_mc.Rebin(reBinNum);
     tFnProEWithoutrpcUniX->Rebin(reBinNum);
     cout<<">>> uniform bin ... 12("<<tFnProEWithoutrpcUniX->FindBin(12.) <<") ~ "<<fitHighEdge <<"("<<tFnProEWithoutrpcUniX->FindBin(fitHighEdge) <<")"<<endl;
@@ -626,6 +657,7 @@ void Ibd::Terminate()
     //pol00
     TF1* f00= new TF1("f00","pol0",12.,fitHighEdge);
     TFitResultPtr r0=tFnProEWithoutrpcUniX->Fit(f00,"R+S");
+    //TFitResultPtr r0;
     double chi20=r0->Chi2();
     double ndf0=r0->Ndf();
     double par00,ipar00;
@@ -645,6 +677,7 @@ void Ibd::Terminate()
     //pol10
     TF1* f10= new TF1("f10","pol1",12.,fitHighEdge);
     TFitResultPtr r=tFnProEWithoutrpcUniX->Fit(f10,"RS");
+    //TFitResultPtr r;
     double chi2=r->Chi2();
     double ndf=r->Ndf();
     double par10[2],ipar10[2];
@@ -670,11 +703,13 @@ void Ibd::Terminate()
     //std::cout<<"NFn10  : "<<NFn10<<" NFn10-fnNum_ows  : "<<NFn10-fnNum_ows<<" (NFn10-fnNum_ows)/fnNum_ows : "<<(NFn10-fnNum_ows)/fnNum_ows<<endl;
     //std::cout<<"fnNum_ows  : "<<fnNum_ows<<" stat.err/fnNum_ows : "<<sqrt(fnNum_ows)/fnNum_ows<<" sys.err/fnNum_ows : "<<max(abs(NFn10-fnNum_ows),abs(NFn00-fnNum_ows))/fnNum_ows<<" total.err/fnNum_ows : "<<fnNumErr_ows/fnNum_ows<<endl;
 
-    double fnNum=(fnNum_ows+fnNum_rpc)/2;
+    //double fnNum=(fnNum_ows+fnNum_rpc)/2;
+    double fnNum=(fnNum_ows+fnNum_rpc+fnNum_iws_MC)/3;
     multimap<double,string> fnNumMap;
     fnNumMap.insert(make_pair((double)fnNum,"*fnNum"));
     fnNumMap.insert(make_pair((double)fnNum_ows,"fnNum_ows"));
     fnNumMap.insert(make_pair((double)fnNum_rpc,"fnNum_rpc"));
+    fnNumMap.insert(make_pair((double)fnNum_iws_MC,"fnNum_iws_MC"));
     fnNumMap.insert(make_pair((double)NFn00,"NFn00"));
     fnNumMap.insert(make_pair((double)NFn10,"NFn10"));
     int mapSize=fnNumMap.size();
@@ -710,13 +745,27 @@ void Ibd::Terminate()
         <<"   B/S : "<<fnNum/(tNumo+tNum1) \
         <<" rate : "<<fnNum/totallivetime0<<" +- "<< fnNumErr/totallivetime0<<" /day"<<endl;
     //tFnProEWithoutrpcUniX->SetLineColor();
+    tFnProEWithoutrpcUniX->SetTitle(Form("%s",siteStr.c_str()));
+    tFnProEWithoutrpcUniX->SetStats(kFALSE);
+    tFnProEWithoutrpcUniX->GetXaxis()->SetTitle("Prompt signal energy (MeV)");
+    tFnProEWithoutrpcUniX->GetYaxis()->SetTitle(Form("Events / %.1f MeV",0.5*reBinNum));
     tFnProEWithoutrpcUniX->Draw("e");
     h1_ows.SetLineColor(kRed);
     h1_ows.Draw("same");
     h1_rpc.SetLineColor(kBlue);
     h1_rpc.Draw("same");
+    h1_iws_MC.SetLineColor(kGreen);
+    h1_iws_MC.Draw("same");
     gPad->SetLogy();
-    c2->SaveAs(Form("%s/%s%sfnSpec.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
+        TLegend *legend=new TLegend(.6,.55,.79,.79);
+        legend->AddEntry(tFnProEWithoutrpcUniX,"data","lp");
+        legend->AddEntry(&h1_ows,"OWS-tagged","lp");
+        legend->AddEntry(&h1_rpc,"RPC-tagged","lp");
+        legend->AddEntry(&h1_iws_MC,"IWS-tagged","lp");
+        legend->SetFillColor(0);
+        legend->SetBorderSize(0);
+        legend->Draw();
+    c2->SaveAs(Form("%s/%s%sfnSpecForNeu2014.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
     //c2->Write();
     tFnProEWithrpc->Write();
     tFnProEWithoutrpc->Write();

@@ -1,0 +1,4 @@
+1) analyse He/Li
+    1.update `P14A/EH*run.list.P14A` be same with data.
+    2.`root -l ;.L GenLiHisto.C+; GenLiHisto("P14A")` to update `EH*Li_P14A.root`
+

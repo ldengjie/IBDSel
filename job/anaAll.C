@@ -21,6 +21,7 @@
 #include <TChain.h>
 #include <TROOT.h>
 #include <vector>
+#include <iomanip>
 using namespace RooFit;
 using namespace std;
 
@@ -35,7 +36,7 @@ int anaHists(int siteNum,string dataVer)
     bool anamuon=0;//
     bool anasingle=0;//accidentals bg
     bool anaLiHe=1;//He8/Li9 bg
-    bool anaEffMulti=1;//efficiency of multiple cut
+    bool anaEffMulti=0;//efficiency of multiple cut
     bool genBinNumofRun=0;
     int ADNumOfSite[3]={0};
     int daqHistNum=5;
@@ -218,7 +219,7 @@ int anaHists(int siteNum,string dataVer)
         TFile *f = new TFile(filename.c_str());
         if( f->IsZombie() )
         {
-            cout<<"Can't open "<<site<<"/" <<runnum <<endl;
+            cout<<"Can't open "<<site<<":" <<runnum <<endl;
             //exit(-1);
             continue;
         }
@@ -232,6 +233,7 @@ int anaHists(int siteNum,string dataVer)
             outfile4runBinNum.open(outfile4runBinNumName.c_str(),ios::app|ios::out);
             outfile4runBinNum<< runNumShort <<" : ";
             TH1F* h4runBinNum=(TH1F*)f->Get("LiveTime/DaqTime");
+            //cout<<"Bin  : "<<h4runBinNum->FindBin(1326153024)<<endl;
             TAxis *xaxis =h4runBinNum->GetXaxis();
             int binNum = xaxis->GetNbins();
             for( int ii=1 ; ii<binNum ; ii++ )
@@ -716,8 +718,8 @@ int anaHists(int siteNum,string dataVer)
     std::cout<<"begin to analyse Li "<<endl;
     if(anaLiHe)
     {
-        //TCanvas* c = new TCanvas("c","c",2000,800) ; 
-        //c->Divide(3,2);
+        TCanvas* c = new TCanvas("c","c",2000,800) ; 
+        c->Divide(3,2);
         TString xTitle[6]={"0.02~0.5GeV","0.5~1.5GeV","1.5~2.5GeV","2.5~3.5GeV","3.5~4.5GeV",">4.5GeV"};
         double showerTh[7] = {0.02, 0.5, 1.5, 2.5, 3.5, 4.5, 5.0};
         TH1F* LiResult[5];
@@ -846,7 +848,6 @@ int anaHists(int siteNum,string dataVer)
                 Li9Frac.setVal(minindex[j]*0.025);
                 fitres = sum->fitTo((*data),Save(),PrintLevel(-1),Extended(kTRUE));
                 //fitres->Print();
-                /*
                    mesframe[j] = x.frame() ;
                    data->plotOn(mesframe[j]) ;
                    sum->plotOn(mesframe[j]);
@@ -858,10 +859,9 @@ int anaHists(int siteNum,string dataVer)
                 mesframe[j]->GetYaxis()->SetTitle("Entries");
                 mesframe[j]->SetMarkerSize(0.2);
 
-                //c->cd(j+1);
-                //mesframe[j]->Draw();
-                //c->SetLogx();
-                 */
+                c->cd(j+1);
+                mesframe[j]->Draw();
+                c->SetLogx();
                 /*
                    for( int i=0 ; i<41 ; i++ )
                    {
@@ -903,7 +903,11 @@ int anaHists(int siteNum,string dataVer)
              */
 
             n98total=(n98fit[0]+n98fit[1]+n98fit[2]+(n98fit[3]+n98fit[4]+n98fit[5])*exp(-1/0.257))/0.678;
+            double n98totalNoShowerVeto=(n98fit[0]+n98fit[1]+n98fit[2]+(n98fit[3]+n98fit[4]+n98fit[5]))/0.678;
+            cout<<">2.5Gev : "<<n98fit[3]+n98fit[4]+n98fit[5]<<" +- "<<sqrt(in98fit[3]*in98fit[3]+in98fit[4]*in98fit[4]+in98fit[5]*in98fit[5])<<endl;
+            cout<<"<2.5Gev : "<<n98fit[0]+n98fit[1]+n98fit[2]<<" +- "<<sqrt(in98fit[0]*in98fit[0]+in98fit[1]*in98fit[1]+in98fit[2]*in98fit[2])<<endl;
             ifitn98total=sqrt(in98fit[0]*in98fit[0]+in98fit[1]*in98fit[1]+in98fit[2]*in98fit[2]+((in98fit[3]+in98fit[4]+in98fit[5])*exp(-1/0.257)*(in98fit[3]+in98fit[4]+in98fit[5])*exp(-1/0.257)))/0.678;
+            double ifitn98totalNoShowerVeto=sqrt(in98fit[0]*in98fit[0]+in98fit[1]*in98fit[1]+in98fit[2]*in98fit[2]+((in98fit[3]+in98fit[4]+in98fit[5])*(in98fit[3]+in98fit[4]+in98fit[5])))/0.678;
             if( ihist==0 )
             {
                 for( int i=0 ; i<ADNumOfSite[siteNum-1] ; i++ )
@@ -914,8 +918,14 @@ int anaHists(int siteNum,string dataVer)
             {
                 tlivetime=totalTime[ihist-1];
             }
+            cout<<"livetime  : "<<tlivetime/(24*3600)<<endl;
             n98Rate=n98total/(tlivetime/(24*3600));
+            double n98RateNoShowerVeto=n98totalNoShowerVeto/(tlivetime/(24*3600));
+            
             in98Rate=sqrt((ifitn98total/(tlivetime/(24*3600)))*(ifitn98total/(tlivetime/(24*3600)))+(n98total/(tlivetime/(24*3600))/2)*(n98total/(tlivetime/(24*3600))/2));
+            double in98RateNoShowerVeto=sqrt((ifitn98totalNoShowerVeto/(tlivetime/(24*3600)))*(ifitn98totalNoShowerVeto/(tlivetime/(24*3600)))+(n98totalNoShowerVeto/(tlivetime/(24*3600))/2)*(n98totalNoShowerVeto/(tlivetime/(24*3600))/2));
+            cout<<"sys.err   : "<<n98Rate/2<<endl;
+            cout<<"stat.err  : "<<sqrt((ifitn98total/(tlivetime/(24*3600)))*(ifitn98total/(tlivetime/(24*3600))))<<endl;
             for( int j=0 ; j<6 ; j++ )
             {
                 //std::cout<<" minindex="<< minindex[j]<<setprecision(5)<<setiosflags(ios::fixed)<<"   minNLL["<<minindex[j] <<"] "<<minNLL[minindex[j]]<<setprecision(6)<<"   n98["<<minindex[j]<<"] "<<n98[minindex[j]]<<"   nIbd["<<minindex[j]<<"] "<<nIbd[minindex[j]]<<"   rateMuValue["<<minindex[j]<<"] "<<rateMuValue[minindex[j]]<<endl;
@@ -937,8 +947,9 @@ int anaHists(int siteNum,string dataVer)
                 std::cout<<"  R "<<minindex[j]*0.025<<"   n98["<<minindex[j]<<"] "<<n98fit[j]<<"   in98["<<minindex[j]<<"] "<< in98fit[j]<<"   fitRateMu["<<minindex[j]<<"] "<<rateMufit[j]<<"  realRateMu "<<RateMuon[j]<<"  nIbd["<<j<<"] "<<nIbd[j]<<"   NumIbd "<<NumIbd[j]<<endl;
             }
             std::cout<<"n98Num   : "<<n98total<<" +- "<<ifitn98total<<" Rate  : "<<n98Rate<<" +- "<< in98Rate<<endl;
+            std::cout<<"n98NumNoShowerVeto   : "<<n98totalNoShowerVeto<<" +- "<<ifitn98totalNoShowerVeto<<" RateNoShowerVeto  : "<<n98RateNoShowerVeto<<" +- "<< in98RateNoShowerVeto<<endl;
         }
-
+        c->SaveAs(Form("%s/%sHeLiFit.eps",dataVer.c_str(),site.c_str()));
         /*
         //TCanvas* c4 = new TCanvas("c4", "c4", 600, 400);
         //gStyle->SetEndErrorSize(0.0);
@@ -970,7 +981,7 @@ int anaHists(int siteNum,string dataVer)
         legend->SetFillColor(0);
         legend->Draw();
          */
-        lf->Close();
+        //lf->Close();
     }	
 
     //===>write result .txt
@@ -1541,7 +1552,7 @@ int anaAll(string dataVer,int siteNum=0)
 
             std::cout<<"====> begin to analyse EH"<<i<<"'s DaqTime, epsilon_mu,epsilon_multi,accidentals,He8/Li9 "<<endl;
             std::cout<<"dataVersion  : "<<dataVer<<endl;
-            //anaHists(i,dataVer);
+            anaHists(i,dataVer);
             std::cout<<" "<<endl;
             std::cout<<" "<<endl;
             std::cout<<" "<<endl;
@@ -1567,7 +1578,7 @@ int anaAll(string dataVer,int siteNum=0)
         std::cout<<" "<<endl;
 
         std::cout<<"====> begin to analyse EH"<<siteNum<<"'s IbdNum ,fast neutron"<<endl;
-        //anaTree(siteNum,dataVerVec);
+        anaTree(siteNum,dataVerVec);
         std::cout<<" "<<endl;
         std::cout<<" "<<endl;
         std::cout<<" "<<endl;

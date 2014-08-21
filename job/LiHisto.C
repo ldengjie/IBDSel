@@ -73,6 +73,8 @@ void LiHisto::Begin(TTree * /*tree*/)
         histname="time2lastshowermuon";
         histname+=j+1;
         t2lastshowermuon[4][j]=new TH1F(histname,"time since last showermuon",100000,0,1000);
+        histname+="NoRed";
+        t2lastshowermuonNoRed[4][j]=new TH1F(histname,"time since last showermuon",100000,0,1000);
 
     }
     
@@ -86,6 +88,8 @@ void LiHisto::Begin(TTree * /*tree*/)
             TString histnameTmp=histname;
             histnameTmp+=j+1;
             t2lastshowermuon[i][j]=new TH1F(histnameTmp,"time since last showermuon",100000,0,1000);
+            histnameTmp+="NoRed";
+            t2lastshowermuonNoRed[i][j]=new TH1F(histnameTmp,"time since last showermuon",100000,0,1000);
 
         }
         
@@ -127,9 +131,23 @@ Bool_t LiHisto::Process(Long64_t entry)
     {
         for( int j=0 ; j<6 ; j++ )
         {
+            //if( promptT2Muon[10+j]*1.e9>=1.&&promptT2Muon[10+j]!=14.1920928955078125  )
+            //{
+                
             t2lastshowermuon[4][j]->Fill(promptT2Muon[10+j]);
-            //std::cout<<"promptT2Muon[10+j]  : "<<promptT2Muon[10+j]<<endl;
             t2lastshowermuon[det-1][j]->Fill(promptT2Muon[10+j]);
+            //}
+            //if( promptT2Muon[16+j]*1.e9>=1.&&promptT2Muon[16+j]!=14.1920928955078125 )
+            //{
+            t2lastshowermuonNoRed[4][j]->Fill(promptT2Muon[16+j]);
+            t2lastshowermuonNoRed[det-1][j]->Fill(promptT2Muon[16+j]);
+            //if( promptT2Muon[4+j]>14.19&&promptT2Muon[4+j]<14.2 )
+            //if( promptT2Muon[16+j]<0.01)
+            //{
+            //cout<<"TriggerTime  : "<< delayedTrigTimeSec<< " "<<Form("%.30f",promptT2Muon[16+j])<<endl;
+            //}
+                
+            //}
         }
     }
     
@@ -156,9 +174,11 @@ void LiHisto::Terminate()
     for( int j=0 ; j<6 ; j++ )
     {
         t2lastshowermuon[4][j]->Write();
+        t2lastshowermuonNoRed[4][j]->Write();
         for( int i=0 ; i<ADNum ; i++ )
         {
             t2lastshowermuon[i][j]->Write();
+            t2lastshowermuonNoRed[i][j]->Write();
         }
         
     }
