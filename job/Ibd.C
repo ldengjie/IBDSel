@@ -13,6 +13,8 @@
 //#include "iomanip.h"
 #include  <TFitResult.h>
 #include  <TLegend.h>
+#include  <TLine.h>
+#include  <TGraph.h>
 #include <iomanip>
 using namespace std;
 
@@ -455,7 +457,7 @@ void Ibd::Terminate()
         reBinNum=3;
     } else
     {
-        reBinNum=2;
+        reBinNum=4;
     }
     TFile* f_ows=new TFile("AnaFNEH1_ows.root","read");
     if( f_ows->IsZombie() )
@@ -656,7 +658,7 @@ void Ibd::Terminate()
     int binupUniX=tFnProEWithoutrpcUniX->FindBin(12.);
     //pol00
     TF1* f00= new TF1("f00","pol0",12.,fitHighEdge);
-    TFitResultPtr r0=tFnProEWithoutrpcUniX->Fit(f00,"R+S");
+    TFitResultPtr r0=tFnProEWithoutrpcUniX->Fit(f00,"0R+S");
     //TFitResultPtr r0;
     double chi20=r0->Chi2();
     double ndf0=r0->Ndf();
@@ -676,7 +678,7 @@ void Ibd::Terminate()
     //iNFnsquare00=sqrt(tFnProEWithoutrpc->Integral(tFnProEWithoutrpc->FindBin(12),tFnProEWithoutrpc->FindBin(100),"width"))*(12-0.7)/(100-12);
     //pol10
     TF1* f10= new TF1("f10","pol1",12.,fitHighEdge);
-    TFitResultPtr r=tFnProEWithoutrpcUniX->Fit(f10,"RS");
+    TFitResultPtr r=tFnProEWithoutrpcUniX->Fit(f10,"0RS");
     //TFitResultPtr r;
     double chi2=r->Chi2();
     double ndf=r->Ndf();
@@ -703,13 +705,13 @@ void Ibd::Terminate()
     //std::cout<<"NFn10  : "<<NFn10<<" NFn10-fnNum_ows  : "<<NFn10-fnNum_ows<<" (NFn10-fnNum_ows)/fnNum_ows : "<<(NFn10-fnNum_ows)/fnNum_ows<<endl;
     //std::cout<<"fnNum_ows  : "<<fnNum_ows<<" stat.err/fnNum_ows : "<<sqrt(fnNum_ows)/fnNum_ows<<" sys.err/fnNum_ows : "<<max(abs(NFn10-fnNum_ows),abs(NFn00-fnNum_ows))/fnNum_ows<<" total.err/fnNum_ows : "<<fnNumErr_ows/fnNum_ows<<endl;
 
-    //double fnNum=(fnNum_ows+fnNum_rpc)/2;
-    double fnNum=(fnNum_ows+fnNum_rpc+fnNum_iws_MC)/3;
+    double fnNum=(fnNum_ows+fnNum_rpc)/2;
+    //double fnNum=(fnNum_ows+fnNum_rpc+fnNum_iws_MC)/3;
     multimap<double,string> fnNumMap;
     fnNumMap.insert(make_pair((double)fnNum,"*fnNum"));
     fnNumMap.insert(make_pair((double)fnNum_ows,"fnNum_ows"));
     fnNumMap.insert(make_pair((double)fnNum_rpc,"fnNum_rpc"));
-    fnNumMap.insert(make_pair((double)fnNum_iws_MC,"fnNum_iws_MC"));
+    //fnNumMap.insert(make_pair((double)fnNum_iws_MC,"fnNum_iws_MC"));
     fnNumMap.insert(make_pair((double)NFn00,"NFn00"));
     fnNumMap.insert(make_pair((double)NFn10,"NFn10"));
     int mapSize=fnNumMap.size();
@@ -724,6 +726,31 @@ void Ibd::Terminate()
         nameStr=Form("  %10s  %5.2f  %3.1f%%",it->second.c_str(),it->first,(it->first-fnNum)/fnNum*100); 
         cout<<nameStr<<endl;
     }
+    int fnNumBinNum=tFnProEWithoutrpcUniX->FindBin(12.)-tFnProEWithoutrpcUniX->FindBin(0.7)+1;
+    //double fnNumLow=(1-fnNumErr)*fnNum/fnNumBinNum;
+    //double fnNumHigh=(1+fnNumErr)*fnNum/fnNumBinNum;
+    TGraph* gLow=new TGraph();
+    TGraph* gHigh=new TGraph();
+    //TGraph *grshade = new TGraph();
+
+    for( int i=0 ; i<fnNumBinNum ; i++ )
+    {
+        double yLow=(h1_ows.GetBinContent(h1_ows.FindBin(0.7)+i)+h1_rpc.GetBinContent(h1_ows.FindBin(0.7)+i))/2*(1-fnNumErr);
+        double xLow=h1_ows.GetBinCenter(h1_ows.FindBin(0.7)+i);
+        double yHigh=(h1_ows.GetBinContent(h1_ows.FindBin(0.7)+i)+h1_rpc.GetBinContent(h1_ows.FindBin(0.7)+i))/2*(1+fnNumErr);
+        double xHigh=h1_ows.GetBinCenter(h1_ows.FindBin(0.7)+i);
+        cout<<"xLow yLow xHigh yHigh  : "<<xLow<<" "<<yLow<<" "<<xHigh<<" "<<yHigh<<endl;
+        gLow->SetPoint(i,xLow,yLow);
+        gHigh->SetPoint(i,xHigh,yHigh);
+        //grshade->SetPoint(i,xLow,yHigh);
+        //grshade->SetPoint(fnNumBinNum+i,xLow,yLow);
+    }
+    //grshade->SetFillStyle(3013);
+    //grshade->SetFillColor(16);
+
+    gLow->SetLineColor(kGreen+3);
+    gHigh->SetLineColor(kGreen+3);
+    
 
     double totallivetime0=0.;
     for( int i=0 ; i<ADNum ; i++ )
@@ -749,23 +776,33 @@ void Ibd::Terminate()
     tFnProEWithoutrpcUniX->SetStats(kFALSE);
     tFnProEWithoutrpcUniX->GetXaxis()->SetTitle("Prompt signal energy (MeV)");
     tFnProEWithoutrpcUniX->GetYaxis()->SetTitle(Form("Events / %.1f MeV",0.5*reBinNum));
+    tFnProEWithoutrpcUniX->SetLineWidth(2);
     tFnProEWithoutrpcUniX->Draw("e");
     h1_ows.SetLineColor(kRed);
     h1_ows.Draw("same");
     h1_rpc.SetLineColor(kBlue);
     h1_rpc.Draw("same");
     h1_iws_MC.SetLineColor(kGreen);
-    h1_iws_MC.Draw("same");
+    //h1_iws_MC.Draw("same");
+    //TLine lhigh(0.7,fnNumHigh,12.,fnNumHigh);
+    //TLine llow(0.7,fnNumLow,12.,fnNumLow);
+    //lhigh.SetLineColor(kGreen);
+    //llow.SetLineColor(kGreen);
+    //lhigh.Draw("same");
+    //llow.Draw("same");
+    gLow->Draw("same");
+    gHigh->Draw("same");
+    //grshade->Draw("samef");
     gPad->SetLogy();
-        TLegend *legend=new TLegend(.6,.55,.79,.79);
-        legend->AddEntry(tFnProEWithoutrpcUniX,"data","lp");
+        TLegend *legend=new TLegend(.55,.55,.89,.89);
+        legend->AddEntry(tFnProEWithoutrpcUniX,"Data","lp");
         legend->AddEntry(&h1_ows,"OWS-tagged","lp");
-        legend->AddEntry(&h1_rpc,"RPC-tagged","lp");
-        legend->AddEntry(&h1_iws_MC,"IWS-tagged","lp");
+        legend->AddEntry(&h1_rpc,"RPC-only-tagged","lp");
+        //legend->AddEntry(&h1_iws_MC,"IWS-tagged","lp");
         legend->SetFillColor(0);
         legend->SetBorderSize(0);
         legend->Draw();
-    c2->SaveAs(Form("%s/%s%sfnSpecForNeu2014.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
+    c2->SaveAs(Form("%s/%s%sfnSpecForNuFact2014.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
     //c2->Write();
     tFnProEWithrpc->Write();
     tFnProEWithoutrpc->Write();
