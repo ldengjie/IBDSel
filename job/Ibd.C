@@ -727,29 +727,31 @@ void Ibd::Terminate()
         cout<<nameStr<<endl;
     }
     int fnNumBinNum=tFnProEWithoutrpcUniX->FindBin(12.)-tFnProEWithoutrpcUniX->FindBin(0.7)+1;
+    double fnNumLow=(1-0.5)*fnNum/fnNumBinNum;
+    double fnNumHigh=(1+0.5)*fnNum/fnNumBinNum;
     //double fnNumLow=(1-fnNumErr)*fnNum/fnNumBinNum;
     //double fnNumHigh=(1+fnNumErr)*fnNum/fnNumBinNum;
-    TGraph* gLow=new TGraph();
-    TGraph* gHigh=new TGraph();
+    //TGraph* gLow=new TGraph();
+    //TGraph* gHigh=new TGraph();
     //TGraph *grshade = new TGraph();
 
-    for( int i=0 ; i<fnNumBinNum ; i++ )
-    {
-        double yLow=(h1_ows.GetBinContent(h1_ows.FindBin(0.7)+i)+h1_rpc.GetBinContent(h1_ows.FindBin(0.7)+i))/2*(1-fnNumErr);
-        double xLow=h1_ows.GetBinCenter(h1_ows.FindBin(0.7)+i);
-        double yHigh=(h1_ows.GetBinContent(h1_ows.FindBin(0.7)+i)+h1_rpc.GetBinContent(h1_ows.FindBin(0.7)+i))/2*(1+fnNumErr);
-        double xHigh=h1_ows.GetBinCenter(h1_ows.FindBin(0.7)+i);
-        cout<<"xLow yLow xHigh yHigh  : "<<xLow<<" "<<yLow<<" "<<xHigh<<" "<<yHigh<<endl;
-        gLow->SetPoint(i,xLow,yLow);
-        gHigh->SetPoint(i,xHigh,yHigh);
+    //for( int i=0 ; i<fnNumBinNum ; i++ )
+    //{
+    //double yLow=(h1_ows.GetBinContent(h1_ows.FindBin(0.7)+i)+h1_rpc.GetBinContent(h1_ows.FindBin(0.7)+i))/2*(1-fnNumErr);
+    //double xLow=h1_ows.GetBinCenter(h1_ows.FindBin(0.7)+i);
+    //double yHigh=(h1_ows.GetBinContent(h1_ows.FindBin(0.7)+i)+h1_rpc.GetBinContent(h1_ows.FindBin(0.7)+i))/2*(1+fnNumErr);
+    //double xHigh=h1_ows.GetBinCenter(h1_ows.FindBin(0.7)+i);
+    //cout<<"xLow yLow xHigh yHigh  : "<<xLow<<" "<<yLow<<" "<<xHigh<<" "<<yHigh<<endl;
+    //gLow->SetPoint(i,xLow,yLow);
+    //gHigh->SetPoint(i,xHigh,yHigh);
         //grshade->SetPoint(i,xLow,yHigh);
         //grshade->SetPoint(fnNumBinNum+i,xLow,yLow);
-    }
+        //}
     //grshade->SetFillStyle(3013);
     //grshade->SetFillColor(16);
 
-    gLow->SetLineColor(kGreen+3);
-    gHigh->SetLineColor(kGreen+3);
+    //gLow->SetLineColor(kGreen+3);
+    //gHigh->SetLineColor(kGreen+3);
     
 
     double totallivetime0=0.;
@@ -790,11 +792,23 @@ void Ibd::Terminate()
     //llow.SetLineColor(kGreen);
     //lhigh.Draw("same");
     //llow.Draw("same");
-    gLow->Draw("same");
-    gHigh->Draw("same");
+    //gLow->Draw("same");
+    //gHigh->Draw("same");
     //grshade->Draw("samef");
+    double fastN = fnNum/fnNumBinNum;
+    double err = fnNum/2/fnNumBinNum;
+
+    TH1D* fastneutron = new TH1D("fast","fast",1,0.7,12);
+    fastneutron->SetBinContent(1,fastN);
+    fastneutron->SetBinError(1, err);
+
+    fastneutron->SetFillColor(9);
+    fastneutron->SetFillStyle(3001);
+    fastneutron->Draw("e2same");
+    fastneutron->Draw("e1same");
+
     gPad->SetLogy();
-        TLegend *legend=new TLegend(.55,.55,.89,.89);
+    TLegend *legend=new TLegend(.55,.55,.89,.89);
         legend->AddEntry(tFnProEWithoutrpcUniX,"Data","lp");
         legend->AddEntry(&h1_ows,"OWS-tagged","lp");
         legend->AddEntry(&h1_rpc,"RPC-only-tagged","lp");
@@ -803,6 +817,7 @@ void Ibd::Terminate()
         legend->SetBorderSize(0);
         legend->Draw();
     c2->SaveAs(Form("%s/%s%sfnSpecForNuFact2014.eps",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
+    c2->SaveAs(Form("%s/%s%sfnSpecForNuFact2014.png",dataVer.c_str(),dataVer.c_str(),siteStr.c_str()));
     //c2->Write();
     tFnProEWithrpc->Write();
     tFnProEWithoutrpc->Write();
