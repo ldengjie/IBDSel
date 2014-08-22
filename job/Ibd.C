@@ -805,7 +805,7 @@ void Ibd::Terminate()
     fastneutron->SetFillColor(9);
     fastneutron->SetFillStyle(3001);
     fastneutron->Draw("e2same");
-    fastneutron->Draw("e1same");
+    //fastneutron->Draw("e1same");
 
     gPad->SetLogy();
     TLegend *legend=new TLegend(.55,.55,.89,.89);
